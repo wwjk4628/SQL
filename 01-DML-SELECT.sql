@@ -34,20 +34,31 @@ SELECT employee_id, first_name, last_name From employees;
 SELECT 3.14159 * 10 * 10 "산술" From dual;
 
 --  특정 컬럼의 값을 산술 연산에 포함
-SELECT first_name, salary, salary * 12 From employees;
+SELECT first_name
+, salary
+, salary * 12 
+From employees;
 
-SELECT first_name, job_id, job_id*12 From employees;
+SELECT first_name
+, job_id, job_id*12
+From employees;
 --  오류의 원인: JOB_ID   NOT NULL VARCHAR2(10)-> job_id는 문자열 (VARCHAR2)
 DESC employees;
 --SELECT salary + salary * NVL(commission_pct, 0) FROM employees;
 -- NULL
 -- 이름, 급여 출력
-SELECT first_name, salary, commission_pct From employees;
+SELECT first_name
+, salary
+, commission_pct 
+From employees;
 
 -- 이름, 커미션까지 포함한 급여를 출력
 -- as에는 띄어쓰기(X) ""사용하면 띄어쓰기 가능
 -- SELECT first_name, salary + salary * NVL(commission_pct, 0) as 커미션 포합 월급 From employees;
-SELECT first_name, salary, commission_pct, salary + salary * commission_pct as "커미션 포합 월급" From employees;
+SELECT first_name, salary
+, commission_pct
+, salary + salary * commission_pct as "커미션 포합 월급" 
+From employees;
 -- NULL이 포함된 연산식의 결과는 NULL
 -- NULL을 처리하기 위한 함수 NVL이 필요
 -- NVL(표현식1, 표현식1이 NULL일 경우의 대체값)
@@ -96,35 +107,44 @@ FROM employees;
 -- 비교연산 : =, <>, >, >=, <, <=
 
 -- 사원들 중 급여가 15000 이상인 직원의 이름과 급여
-SELECT first_name, salary as "월급" FROM employees WHERE salary >= 15000;
+SELECT first_name, salary as "월급" 
+FROM employees WHERE salary >= 15000;
 
 -- 17/01/01일 이후 입사자들의 이름과 입사일을 출력하십시오.
-SELECT first_name, hire_date FROM employees WHERE hire_date >= '17/01/01';
+SELECT first_name, hire_date 
+FROM employees WHERE hire_date >= '17/01/01';
 -- TO_DATE('20170101','YYYYMMDD') 형변환
 
 -- 급여가 14000 이상이거나, 17000 이하인 사원의 이름과 급여
-SELECT first_name, salary FROM employees WHERE salary >= 14000 AND salary <= 17000;
+SELECT first_name, salary 
+FROM employees WHERE salary >= 14000 AND salary <= 17000;
 
 -- BETWEEN : 범위 비교
-SELECT first_name, salary FROM employees WHERE salary between 14000 AND 17000;
+SELECT first_name, salary 
+FROM employees WHERE salary between 14000 AND 17000;
 
 -- NULL 체크 =, <> 사용하면 안됨
 -- IS NULL, IS NOT NULL
 
 -- commission을 받지 않는 사람들
-SELECT first_name, commission_pct FROM employees WHERE commission_pct IS NULL;
+SELECT first_name, commission_pct 
+FROM employees WHERE commission_pct IS NULL;
 
 -- commission을 받는 사람들
-SELECT first_name, commission_pct FROM employees WHERE commission_pct IS NOT NULL;
+SELECT first_name, commission_pct 
+FROM employees WHERE commission_pct IS NOT NULL;
 
 -- IN 연산사: 특정 집합의 요소와 비교
 -- 사원들 중에서 10, 20, 40번 부서에서 근무하는 직원들의 이름과 부서ID
-SELECT first_name, department_id FROM employees WHERE department_id = 10 OR department_id = 20 OR department_id = 40;
+SELECT first_name, department_id 
+FROM employees WHERE department_id = 10 OR department_id = 20 OR department_id = 40;
 -- IN 연산사 : 특정 집합의 요소와 비교
-SELECT first_name, department_id FROM employees WHERE department_id IN (10, 20, 40);
+SELECT first_name, department_id 
+FROM employees WHERE department_id IN (10, 20, 40);
 
 -- 이름이 'Lex'인 사원의 연봉과 입사일, 부서 ID를 출력하십시오.
-SELECT first_name, salary * 12, hire_date,  department_id FROM employees WHERE first_name IN 'Lex';
+SELECT first_name, salary * 12, hire_date,  department_id 
+FROM employees WHERE first_name IN 'Lex';
 
 -- 부서 ID가 10인 사원의 명단이 필요합니다.
 SELECT * FROM employees WHERE department_id = 10;
@@ -137,13 +157,39 @@ SELECT * FROM employees WHERE department_id = 10;
 -- _ : 1개의 정해지지 않은 문자
 
 -- 이름에 am을 포함하고 있는 사원의 이름가 급여
-SELECT first_name, salary FROM employees WHERE LOWER(first_name) LIKE '%am%';
+SELECT first_name, salary 
+FROM employees WHERE LOWER(first_name) LIKE '%am%';
 
 -- 이름에 두 번째 글자가 a인 사원의 이름과 급여
-SELECT first_name, salary FROM employees WHERE LOWER(first_name) LIKE '_a%';
+SELECT first_name, salary 
+FROM employees WHERE LOWER(first_name) LIKE '_a%';
 
 -- 이름의 네번쨰 글자가 a인 사원의 이름과 급여
-SELECT first_name, salary FROM employees WHERE LOWER(first_name) LIKE '___a%';
+SELECT first_name, salary 
+FROM employees WHERE LOWER(first_name) LIKE '___a%';
 
 -- 이름이 네글자인 사원들 중에서 두번째 글자가 a인 사원 이름과 급여
-SELECT first_name, salary FROM employees WHERE LOWER(first_name) LIKE '_a__';
+SELECT first_name, salary 
+FROM employees WHERE LOWER(first_name) LIKE '_a__';
+
+-- 부서 ID가 90인 사원중, 급여가 20000 이상인 사원은 누구입니까?
+SELECT first_name, department_id, salary 
+FROM employees WHERE department_id = 90 AND salary > 20000;
+
+-- 입사일이 11/01/01 ~ 17/12/31 구간에 있는 사원의 목록
+SELECT first_name, hire_date 
+FROM employees WHERE hire_date between '11/01/01' AND '17/12/31';
+
+-- manager_id 가 100, 120, 147인 사원의 명단
+-- 1. 비교연산자+논리연산자의 조합
+SELECT first_name, manager_id
+FROM employees WHERE
+manager_id = 100
+OR manager_id = 120
+OR manager_id = 147;
+-- 2. IN 연산자 이용
+SELECT first_name
+, manager_id 
+FROM employees
+WHERE manager_id IN (100, 120, 147);
+-- 두 쿼리를 비교
