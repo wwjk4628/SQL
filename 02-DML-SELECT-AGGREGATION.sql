@@ -78,3 +78,80 @@ SELECT first_name,
     d.department_name
 FROM employees e LEFT OUTER JOIN departments d
     ON e.department_id = d.department_id; 
+
+-------------------
+-- RIGHT OUTER JOIN
+-------------------
+-- RIGHT 테이블의 모든 레코드가 출력 결과에 참여
+
+-- Oracle SQL
+SELECT e.first_name,
+    e.department_id,
+    d.department_id,
+    d.department_name
+FROM employees e, departments d
+WHERE e.department_id (+) = d.department_id;
+
+SELECT e.first_name,
+    e.department_id,
+    d.department_id,
+    d.department_name
+FROM employees e RIGHT OUTER JOIN departments d
+ON e.department_id = d.department_id;
+
+----------------------------
+-- FULL OUTER JOIN
+-------------------------
+
+-- JOIN에 참여한 모든 테이블의 모든 레코드를 출력에 참여
+-- 짝이 없는 레코드들은 null을 포함해서 출력에 참여
+
+-- ANSI SQL
+
+SELECT e.first_name,
+    e.department_id,
+    d.department_id,
+    d.department_name
+FROM employees e FULL OUTER JOIN departments d
+ON e.department_id = d.department_id
+ORDER BY 3;
+
+--------------------
+-- NATURAL JOIN
+--------------------
+
+-- JOIN할 테이블에 같은 이름의 컬럼이 있을 경우, 해당 컬럼을 기준으로 JOIN
+SELECT *
+FROM employees e NATURAL JOIN departments d;
+
+SELECT * 
+FROM employees e JOIN departments d ON e.department_id = d.department_id;
+
+SELECT * 
+FROM employees e JOIN departments d ON e.manager_id = d.manager_id AND e.department_id = d.department_id;
+
+------------------
+-- SELF JOIN
+-------------------
+
+SELECT e1.employee_id,
+    e1.first_name,
+    e1.manager_id,
+    e2.first_name
+FROM employees e1 JOIN employees e2
+    ON  e1.manager_id = e2.employee_id;
+    
+SELECT e1.employee_id,
+    e1.first_name,
+    e1.manager_id,
+    e2.first_name
+FROM employees e1, employees e2
+WHERE e1.manager_id = e2.employee_id;
+
+-- Steven 포함해서 출력
+SELECT e1.employee_id,
+    e1.first_name,
+    e1.manager_id,
+    e2.first_name
+FROM employees e1 LEFT OUTER JOIN employees e2
+    ON  e1.manager_id = e2.employee_id;
