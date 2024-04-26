@@ -1,10 +1,10 @@
 --  문제1
-SELECT first_name ||' '|| last_name ,
+SELECT manager_id,  first_name ||' '|| last_name ,
 salary ,
 phone_number ,
 hire_date 
 FROM employees
-ORDER BY hire_date ASC;
+ORDER BY nvl(manager_id,0) ASC, hire_date ASC;
 
 --  문제1
 SELECT first_name ||' '|| last_name as "이름",
@@ -49,15 +49,15 @@ WHERE LOWER(first_name) LIKE '%s%';
 -- 문제8
 SELECT department_name
 FROM departments
-ORDER BY LENGTH(department_name) DESC;
+ORDER BY LENGTH(department_name) DESC, department_name ASC;
 
 -- 문제9
 SELECT UPPER(country_name)
 FROM countries
 WHERE country_id IN(SELECT country_id FROM locations)
-ORDER BY country_name ASC;
+ORDER BY UPPER(country_name) ASC;
 
 -- 문제10
-SELECT first_name, salary, TRANSLATE(phone_number,'.','-') as "전화번호" , hire_date
+SELECT first_name, salary, SUBSTR (TRANSLATE(phone_number,'.','-'),3) as "전화번호" , hire_date
 FROM employees
 WHERE hire_date < TO_DATE('20131231','YYYYMMDD');
