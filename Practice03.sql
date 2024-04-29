@@ -114,7 +114,13 @@ AND LOWER(j.job_id) LIKE 'ac_account';
 --매니저(manager)의 이름(first_name), 위치(locations)한 도시(city), 나라(countries)의 이름
 --(countries_name) 그리고 지역구분(regions)의 이름(resion_name)까지 전부 출력해 보세요.
 --(11건)
-SELECT *
+SELECT d.department_id,
+    d.department_name,
+    d.manager_id,
+    e.first_name,
+    l.city,
+    c.country_name,
+    r.region_name
 FROM employees e, departments d, locations l, countries c, regions r
 WHERE e.employee_id = d.manager_id
 AND d.location_id = l.location_id
@@ -128,3 +134,12 @@ AND c.region_id = r.region_id;
 --(department_name), 매니저(manager)의 이름(first_name)을 조회하세요.
 --부서가 없는 직원(Kimberely)도 표시합니다.
 --(106명)
+SELECT man.employee_id,
+    man.first_name,
+    d.department_name,
+    man.manager_id,
+    e.first_name
+    
+FROM employees e, departments d ,employees man
+WHERE  man.department_id = d.department_id(+) AND e.employee_id = man.manager_id
+ORDER BY man.employee_id
