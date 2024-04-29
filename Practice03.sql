@@ -17,11 +17,22 @@ ORDER BY 4 ASC,1 DESC;
 --재업무(job_title)를 사번(employee_id) 오름차순 으로 정렬하세요.
 --부서가 없는 Kimberely(사번 178)은 표시하지 않습니다.
 --(106건)
+SELECT e.employee_id,
+    e.first_name,
+    e.salary,
+    d.department_name,
+    j.job_title
+FROM employees e, departments d, jobs j
+WHERE e.department_id = d.department_id AND e.job_id = j.job_id
+ORDER BY 5 ASC;
 
 
 --문제2-1.
 --문제2에서 부서가 없는 Kimberely(사번 178)까지 표시해 보세요
 --(107건)
+SELECT e.employee_id
+FROM employees e, departments d
+WHERE e.department_id = d.department_id(+);
 
 
 --문제3.
@@ -29,10 +40,10 @@ ORDER BY 4 ASC,1 DESC;
 --도시아이디, 도시명, 부서명, 부서아이디를 도시아이디(오름차순)로 정렬하여 출력하세요
 --부서가 없는 도시는 표시하지 않습니다.
 --(27건)
-SELECT l.location_id,
-    l.city,
-    d.department_name,
-    d.department_id
+SELECT l.location_id as "도시아이디",
+    l.city as "도시명",
+    d.department_name as "부서명",
+    d.department_id as "부서아이디"
 FROM locations l , departments d
 WHERE l.location_id = d.location_id
 ORDER BY 1 ASC;
@@ -53,8 +64,8 @@ ORDER BY 1 ASC;
 --지역(regions)에 속한 나라들을 지역이름(region_name), 나라이름(country_name)으로 출력하
 --되 지역이름(오름차순), 나라이름(내림차순) 으로 정렬하세요.
 --(25건)
-SELECT r.region_name,
-    c.country_name
+SELECT r.region_name as "지역이름",
+    c.country_name as "나라이름"
 FROM regions r, countries c
 WHERE r.region_id = c.region_id
 ORDER BY 1 ASC, 2 DESC;
@@ -65,11 +76,12 @@ ORDER BY 1 ASC, 2 DESC;
 --사번(employee_id), 이름(first_name)과 채용일(hire_date), 매니저이름(first_name), 매니저입
 --사일(hire_date)을 조회하세요.
 --(37건)
-SELECT emp.employee_id,
-    emp.first_name,
-    emp.hire_date,
-    man.first_name,
-    man.hire_date
+SELECT
+    emp.employee_id 사번,
+    emp.first_name  이름,
+    emp.hire_date   채용일,
+    man.first_name  매니저이름,
+    man.hire_date   매니저입사일
 FROM employees emp, employees man
 WHERE emp.manager_id = man.employee_id
 --자신의 매니저보다 채용일(hire_date)이 빠른 사원의
@@ -81,16 +93,17 @@ AND emp.hire_date < man.hire_date;
 --출력하세요.
 --값이 없는 경우 표시하지 않습니다.
 --(27건)
-SELECT con.country_name,
-    con.country_id,
-    loc.city,
-    loc.location_id,
-    dep.department_name,
-    dep.department_id
+SELECT con.country_name as "나라명",
+    con.country_id as "나라아이디",
+    loc.city as "도시명",
+    loc.location_id as "도시아이디",
+    dep.department_name as "부서명",
+    dep.department_id as "부서아이디"
 FROM countries con, locations loc, departments dep
 WHERE con.country_id = loc.country_id AND
 loc.location_id = dep.location_id
 ORDER BY 1 ASC;
+
 
 --문제7.
 --job_history 테이블은 과거의 담당업무의 데이터를 가지고 있다.
@@ -98,16 +111,15 @@ ORDER BY 1 ASC;
 --디, 시작일, 종료일을 출력하세요.
 --이름은 first_name과 last_name을 합쳐 출력합니다.
 --(2건)
-SELECT j.job_id,
-    e.employee_id,
-    e.first_name ||' '||
-    e.last_name,
-    e.job_id,
-    j.start_date,
-    j.end_date
+SELECT e.employee_id as "사번", 
+    e.first_name ||' '|| e.last_name as "이름", 
+    e.job_id as "업무아이디", 
+    j.start_date as "시작일", 
+    j.end_date as "종료일"
 FROM employees e, job_history j
 WHERE e.employee_id = j.employee_id
 AND LOWER(j.job_id) LIKE 'ac_account';
+
 
 --문제8.
 --각 부서(department)에 대해서 부서번호(department_id), 부서이름(department_name),
@@ -139,7 +151,21 @@ SELECT e.employee_id,
     d.department_name,
     e.manager_id,
     man.first_name
-    
 FROM employees e, departments d ,employees man
 WHERE  e.manager_id = man.employee_id AND man.department_id = d.department_id(+)
-ORDER BY e.employee_id
+ORDER BY e.employee_id;
+----------------------------------------------------------------------
+--SELECT
+--    emp.employee_id     사번,
+--    emp.first_name      이름,
+--    dep.department_name 부서명,
+--    man.first_name      매니저이름
+--FROM
+--    employees   emp
+--    JOIN employees man
+--    ON emp.manager_id = man.employee_id
+--    LEFT OUTER JOIN departments dep
+--    ON emp.department_id = dep.department_id
+--ORDER BY
+--    1 ASC;
+-----------------------------------------------------------------------
