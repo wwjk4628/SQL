@@ -142,4 +142,4 @@ SELECT e.employee_id,
     
 FROM employees e, departments d ,employees man
 WHERE  e.manager_id = man.employee_id AND man.department_id = d.department_id(+)
-ORDER BY man.employee_id
+ORDER BY e.employee_id
