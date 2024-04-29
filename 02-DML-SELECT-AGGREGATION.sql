@@ -155,3 +155,64 @@ SELECT e1.employee_id,
     e2.first_name
 FROM employees e1 LEFT OUTER JOIN employees e2
     ON  e1.manager_id = e2.employee_id;
+    
+---------------------------------------
+--  GROUP Aggregation
+---------------------------------------
+
+-- 집계 : 여러 행으로부터 데이터를 수집, 하나의 행으로 반환
+
+-- COUNT : 갯수 세기 함수
+-- employees 테이블의 총 레코드 갯수?
+SELECT COUNT(*) FROM employees;
+
+-- *로 카운트 하면 모든 행의 수를 반환
+-- 특정 컬럼 내에 NULL 값이 포함되어 있는지의 여부는 중요하지 않음
+
+-- commission을 받는 직원의 수를 알고 싶을 경우
+SELECT COUNT (commission_pct) FROM employees;
+
+SELECT COUNT(*) 
+FROM employees
+WHERE commission_pct IS NOT NULL;
+
+-- SUM : 합계 함수 
+-- 모든 사원의 급여의 합계
+SELECT SUM(salary) FROM employees;
+
+-- AVG : 평균 함수
+-- 사원들의 평균 급여?
+SELECT AVG(salary) FROM employees;
+
+-- 사원들이 받는 커미션 비율의 평균
+SELECT AVG(commission_pct) FROM employees;  --  22%
+-- AVG 함수는 NULL 값이 포함되어 있는 경우 그 값을 집계 수치에서 제외
+-- NULL 값을 집계 결과에 포함시킬지의 여부는 정책으로 결정하고 수행해야 한다.
+SELECT AVG(nvl(commission_pct, 0)) FROM employees;
+
+-- MIN/MAX : 최솟값/최댓값
+-- AVG/MEDIAN : 산술평균/중앙값
+SELECT MIN(salary) 최소급여,
+    MAX(salary) 최대급여,
+    AVG(salary) 평균급여,
+    MEDIAN(salary) 급여중앙값
+FROM employees;
+
+-- 흔히 범하는 오류
+-- 부서별로 평균 급여를 구하고자 할 때
+SELECT department_id, AVG(salary)
+FROM employees;
+
+SELECT department_id FROM employees;    --  여러 개의 레코드
+SELECT AVG(salary) FROM employees;  --  단일 레코드
+
+SELECT department_id, salary
+FROM employees
+ORDER BY department_id;
+-------------------------------------------------------------
+-- GROUP BY
+SELECT department_id, ROUND(AVG(salary),2)
+FROM employees
+--WHERE department_id IS NOT NULL
+GROUP BY department_id  --  집계를 위해 특정 컬럼을 기준으로 그룹핑
+ORDER BY department_id;
