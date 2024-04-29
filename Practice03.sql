@@ -134,12 +134,12 @@ AND c.region_id = r.region_id;
 --(department_name), 매니저(manager)의 이름(first_name)을 조회하세요.
 --부서가 없는 직원(Kimberely)도 표시합니다.
 --(106명)
-SELECT man.employee_id,
-    man.first_name,
+SELECT e.employee_id,
+    e.first_name,
     d.department_name,
-    man.manager_id,
-    e.first_name
+    e.manager_id,
+    man.first_name
     
 FROM employees e, departments d ,employees man
-WHERE  man.department_id = d.department_id(+) AND e.employee_id = man.manager_id
+WHERE  e.manager_id = man.employee_id AND man.department_id = d.department_id(+)
 ORDER BY man.employee_id
