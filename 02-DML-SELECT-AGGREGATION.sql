@@ -216,3 +216,265 @@ FROM employees
 --WHERE department_id IS NOT NULL
 GROUP BY department_id  --  집계를 위해 특정 컬럼을 기준으로 그룹핑
 ORDER BY department_id;
+
+
+
+-------------------------------------------------------------------------------------------------
+
+-- 부서별 평균 급여에 부서명도 포함하여 출력
+SELECT emp.department_id, dept.department_name, ROUND(AVG(emp.salary), 2)
+FROM employees emp
+    JOIN departments dept
+        ON emp.department_id = dept.department_id
+GROUP BY emp.department_id, dept.department_name
+ORDER BY emp.department_id;
+
+-- GROUP BY 절 이후에는 GROUP BY에 참여한 컬럼과 집계 함수만 남는다.
+
+
+-- 평균 급여가 7000 이상인 부서만 출력
+SELECT
+    department_id, AVG(salary)
+FROM employees
+WHERE AVG(salary) >= 7000   --  아직 집계 함수 시행되지 않은 상태 -> 집계 함수의 비교 불가
+GROUP BY department_id
+ORDER BY department_id;
+
+
+-- 집계 함수 이후의 조건 비교 HAVING 절을 이용
+SELECT 
+    department_id, AVG(salary)
+FROM employees
+GROUP BY department_id
+    HAVING AVG(salary) >= 7000  --   GROUP BY aggregation의 조건 필터링
+ORDER BY department_id;
+
+
+-- ROLLUP
+-- GROUP BY 절과 함께 사용
+-- 그룹지어진 결과에 대한 좀 더 상세한 요약을 제공하는 기능 수행
+-- 일종의 ITEM TOTAL
+SELECT
+    department_id,
+    job_id,
+    SUM(salary)
+FROM employees
+GROUP BY ROLLUP(department_id, job_id)
+ORDER BY department_id;
+
+
+
+-- CUBE
+-- CrossTab에 대한 Summary를 함께 추출하는 함수
+-- Rollup 함수에 의해 출력되는 Item Total 값과 함께
+-- Column Total 값을 함께 추출
+SELECT 
+    department_id,
+    job_id,
+    SUM(salary)
+FROM employees
+GROUP BY CUBE(department_id, job_id)
+ORDER BY department_id;
+
+
+
+-------------------
+-- SUBQUERY
+-------------------
+
+-- 모든 직원 급여의 중앙값보다 많은 급여를 받는 사원의 목록
+
+-- 1) 직원 급여의 중앙값?
+-- 2) 1)번의 결과보다 많은 급여를 받는 직원의 목록?
+
+-- 1) 직원 급여의 중앙값
+SELECT MEDIAN(salary) FROM employees;   -- 6200
+-- 2) 1)번의 결과(6200)보다 많은 급여를 받는 직원의 목록
+SELECT first_name, salary 
+FROM employees
+WHERE salary >= 6200;
+
+-- 1), 2) 쿼리 합치기
+SELECT first_name, salary
+FROM employees
+WHERE salary >= (SELECT MEDIAN(salary) FROM employees)
+ORDER BY salary DESC;
+
+-- Susan보다 늦게 입사한 사원의 정보
+-- 1) Susan의 입사일
+-- 2) 1)번의 결과보다 늦게 입사한 사원의 정보를 추출
+
+-- 1) Susan의 입사일
+SELECT hire_date FROM employees
+WHERE first_name = 'Susan';     --  12/06/07
+
+-- 2) 1)의 결과보다 늦게 입사한 직원의 목록을 추출하는 쿼리
+SELECT first_name, hire_date
+FROM employees 
+WHERE hire_date > '12/06/07';
+
+-- 두 쿼리 합치기
+SELECT first_name, hire_date
+FROM employees
+WHERE hire_date > (SELECT hire_date FROM employees WHERE first_name='Susan');
+
+
+-- 연습문제
+-- 급여를 모든 직원 급여의 중앙값보다 많이 받으면서 수잔보다 늦게 입사한 직원의 목록
+-- 조건 1. 급여를 모든 직원 급여의 중앙값보다 많이 받는 조건
+-- 조건 2. 수잔의 입사일보다 hire_date 늦게 입사한 조건
+SELECT first_name, salary, hire_date
+FROM employees
+WHERE salary > (SELECT MEDIAN(salary) FROM employees) AND       -- 조건 1
+    hire_date > (SELECT hire_date FROM employees WHERE first_name = 'Susan')
+ORDER BY hire_date ASC, salary DESC;
+
+
+
+SELECT MIN(first_name) FROM employees GROUP BY department_id;
+
+-- 다중행 서브쿼리
+-- 서브쿼리 결과가 둘 이상의 레코드일때 단일행 비교연산자는 사용할 수 없다.
+-- 집합 연산에 관련된 IN, ANY, ALL, EXIST 등을 사용해야 한다.
+
+-- 직원들 중,
+-- 110번 부서 사람들이 받는 급여와 같은 급여를 받는 직원들의 목록
+
+-- 1. 110번 부서 사람들은 얼마의 급여를 받는가?
+SELECT salary FROM employees WHERE department_id = 110;
+
+SELECT first_name, salary
+FROM employees
+WHERE salary IN(12008, 8300);
+
+SELECT first_name, salary 
+FROM employees 
+WHERE salary IN (SELECT salary FROM employees WHERE department_id = 110);
+ 
+ 
+ -- Correlated Query : 연관 쿼리
+ SELECT first_name,
+    salary,
+    department_id
+FROM employees outer
+WHERE salary > (SELECT AVG(salary) FROM employees
+                WHERE department_id = outer.department_id);
+                
+-- 외부 쿼리: 급여를 특정 값보다 많이 받는 직원의 이름, 급여, 부서 아이디
+
+-- 내부 쿼리: 특정 부서에 소속된 직원의 평균 급여
+
+-- 자신이 속한 부서의 평균 급여보다 많이 받는 직원의 목록을 구하라는 의미
+-- 외부 쿼리가 내부 쿼리에 영향을 미치고
+-- 내부 쿼리 결과가 다시 외부 쿼리에 영향을 미침
+
+SELECT first_name,
+    salary,
+    department_id
+FROM employees outer
+WHERE salary = (SELECT MAX(salary) FROM employees
+                WHERE department_id = outer.department_id)
+ORDER BY 3;
+
+
+
+-- 서브쿼리 연습
+-- 각 부서별로 최고 급여를 받는 사원의 목록 (조건절에서 서브쿼리 이용)
+SELECT department_id, MAX(salary)
+FROM employees
+GROUP BY department_id;
+
+SELECT employee_id, first_name, department_id, salary
+FROM employees
+WHERE (department_id, salary) IN (SELECT department_id, MAX(salary)
+FROM employees
+GROUP BY department_id);
+-------------------------------------------------------------------
+-- 각 부서별로 최고 급여를 받는 사원의 목록 (서브쿼리를 이용, 임시테이블 생성 테이블 조인 결과 뽑기)
+-- 1. 각 부서의 치고 급여를 출력하는 쿼리를 생서
+SELECT department_id, MAX(salary)
+FROM employees
+GROUP BY department_id;
+
+
+-- 2. 1번쿼리에서 생성한 임시 테이블과 외부 쿼리를 조인하는 쿼리
+SELECT e.employee_id, e.first_name, e.department_id, e.salary
+FROM employees e, (SELECT department_id, MAX(salary) salary
+                    FROM employees
+                    GROUP BY department_id) sal
+WHERE e.department_id = sal.department_id
+    AND e.salary = sal.salary
+ORDER BY e.department_id;
+-------
+SELECT  e.employee_id, e.first_name, e.department_id, e.salary
+FROM employees e
+JOIN (SELECT department_id, MAX(salary) salary
+                    FROM employees
+                    GROUP BY department_id) sal 
+ON e.department_id = sal.department_id
+AND e.salary = sal.salary
+ORDER BY e.department_id;
+-- TOP-K 쿼리
+-- 질의의 결과로 부여된 가상 컬럼 rownum 값을 사용해서 쿼리순서 반환
+-- rownum 값을 활용해서 상위 k개의 값을 얻어오는 쿼리
+
+-- 2017년 입사자중에서 연봉 순위 5위까지 출력
+
+SELECT * FROM employees 
+WHERE hire_date LIKE '17%'
+ORDER BY salary DESC;
+
+SELECT * FROM (SELECT * FROM employees 
+WHERE hire_date LIKE '17%'
+ORDER BY salary DESC)
+WHERE ROWNUM < 6;
+
+SELECT * FROM employees 
+JOIN (SELECT * FROM employees 
+    WHERE hire_date LIKE '17%'
+    ORDER BY salary DESC)
+ON ROWNUM < 6
+;
+
+-- 집합 연산
+
+SELECT first_name, salary, hire_date FROM employees WHERE hire_date < '15/01/01';
+SELECT first_name, salary, hire_date FROM employees WHERE salary > 12000;
+
+-- 합집합 중복 레코드는 한개로 취급
+SELECT first_name, salary, hire_date FROM employees WHERE hire_date < '15/01/01'
+UNION
+SELECT first_name, salary, hire_date FROM employees WHERE salary > 12000;
+
+-- 중복 레코드는 별개로 취급
+SELECT first_name, salary, hire_date FROM employees WHERE hire_date < '15/01/01'
+UNION ALL
+SELECT first_name, salary, hire_date FROM employees WHERE salary > 12000;
+
+-- 교집합
+SELECT first_name, salary, hire_date FROM employees WHERE hire_date < '15/01/01'
+INTERSECT
+SELECT first_name, salary, hire_date FROM employees WHERE salary > 12000;
+
+-- 차집합
+SELECT first_name, salary, hire_date FROM employees WHERE hire_date < '15/01/01'
+MINUS
+SELECT first_name, salary, hire_date FROM employees WHERE salary > 12000;
+
+-- RANK 관련 함수
+SELECT salary, first_name,
+    RANK() OVER (ORDER BY salary DESC) as rank, 
+    DENSE_RANK() OVER (ORDER BY salary DESC) as dense_rank,
+    ROW_NUMBER() OVER (ORDER BY salary DESC) as row_number,
+    rownum
+FROM employees;
+
+-- Hierarchical Query   (Oracle 특화)
+-- 트리 형태 구조 표현
+-- level 가상 컬럼 활용 쿼리
+
+SELECT level, employee_id, first_name, manager_id
+FROM employees
+START WITH manager_id IS NULL
+CONNECT BY PRIOR employee_id = manager_id
+ORDER BY level;
