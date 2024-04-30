@@ -44,7 +44,7 @@ SELECT MIN(salary),
     manager_id
 FROM employees
 WHERE manager_id IS NOT NULL
-AND hire_date > TO_DATE('20150101'.'YYYYMMDD')
+AND hire_date > TO_DATE('20150101','YYYYMMDD')
 GROUP BY manager_id
 HAVING AVG(salary) >= 5000
 ORDER BY 3 DESC;
