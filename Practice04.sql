@@ -291,7 +291,8 @@ WHERE
     rn > 10
     AND rn < 16;
 --------------------------
-SELECT
+SELECT *
+FROM (SELECT
     employee_id,
     hire_date,
     ROW_NUMBER()
@@ -300,7 +301,7 @@ SELECT
             hire_date ASC
     ) AS rn
 FROM
-    employees
+    employees)
 WHERE
     rn < 6;
 
@@ -323,3 +324,7 @@ FROM
 WHERE
     rn < 16
     AND rn > 10;
+    
+
+
+    
