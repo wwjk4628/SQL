@@ -7,7 +7,7 @@ FROM
     employees;
 
 SELECT
-    COUNT(salary)
+    COUNT(*)
 FROM
     employees
 WHERE
@@ -22,6 +22,36 @@ WHERE
 --직원번호(employee_id), 이름(first_name), 급여(salary), 평균급여, 최대급여를 급여의 오름차
 --순으로 정렬하여 출력하세요
 --(51건)
+SELECT
+    employee_id,
+    first_name,
+    last_name,
+    salary
+FROM
+    employees
+WHERE
+    salary >= (
+        SELECT
+            AVG(salary)
+        FROM
+            employees
+    )
+INTERSECT
+SELECT
+    employee_id,
+    first_name,
+    last_name,
+    salary
+FROM
+    employees
+WHERE
+    salary <= (
+        SELECT
+            MAX(salary)
+        FROM
+            employees
+    );
+----------------------------------------------------------
 SELECT
     employee_id,
     first_name,
@@ -49,6 +79,26 @@ WHERE
     AND salary <= m.ma
 ORDER BY
     salary;
+------------------------------------------------------------------
+SELECT
+    e.employee_id,
+    e.first_name,
+    e.salary,
+    t.avgsalary,
+    t.maxsalary
+FROM
+    employees e
+    JOIN (
+        SELECT
+            round(
+                AVG(salary), 0
+            )           avgsalary,
+            MAX(salary) maxsalary
+        FROM
+            employees
+    ) t ON e.salary BETWEEN t.avgsalary AND t.maxsalary
+ORDER BY
+    salary;
 
 --문제3.
 --직원중 Steven(first_name) king(last_name)이 소속된 부서(departments)가 있는 곳의 주소
@@ -70,6 +120,22 @@ FROM
 WHERE
     e.first_name LIKE 'Steven'
     AND e.last_name LIKE 'King';
+-----------------------------------------------------------------
+SELECT
+    location_id,
+    street_address,
+    postal_code,
+    city,
+    state_province,
+    country_id
+FROM
+    locations
+    NATURAL JOIN departments    --  location_id 로 JOIN
+    JOIN employees USING ( department_id )
+WHERE
+    first_name = 'Steven'
+    AND last_name = 'King';
+-----------------------------------------------------------------
 SELECT
     l.location_id,
     l.street_address,
@@ -91,32 +157,63 @@ FROM
             first_name LIKE 'Steven'
             AND last_name LIKE 'King'
     )           a ON d.department_id = a.department_id;
+    
+    
+-------------------------------------------------------------------------
+SELECT
+    location_id,
+    street_address,
+    postal_code,
+    city,
+    state_province,
+    country_id
+FROM
+    locations
+WHERE
+    location_id = (
+        SELECT
+            location_id
+        FROM
+            departments
+        WHERE
+            department_id = (
+                SELECT
+                    department_id
+                FROM
+                    employees
+                WHERE
+                    first_name = 'Steven'
+                    AND last_name = 'King'
+            )
+    );
 --문제4.
 --job_id 가 'ST_MAN' 인 직원의 급여보다 작은 직원의 사번,이름,급여를 급여의 내림차순으로
 --출력하세요 -ANY연산자 사용
 --(74건)
-SELECT
-    MAX(salary)
-FROM
-    employees
-WHERE
-    job_id = 'ST_MAN';
+--SELECT
+--    salary
+--FROM
+--    employees
+--WHERE
+--    job_id = 'ST_MAN';
 
 SELECT
     employee_id,
     first_name,
     salary
 FROM
-    employees e
+    employees
 WHERE
-    e.salary < (
+    salary < ANY (
         SELECT
-            MAX(salary)
+            salary
         FROM
             employees
         WHERE
             job_id = 'ST_MAN'
-    );
+    )
+ORDER BY
+    salary DESC;
 
 --문제5.
 --각 부서별로 최고의 급여를 받는 사원의 직원번호(employee_id), 이름(first_name)과 급여
@@ -149,8 +246,8 @@ FROM
     ) a ON e.department_id = a.department_id
            AND e.salary = a.m
 ORDER BY
-    4 DESC;
-
+    3 DESC;
+-------------------------------------------------------------------------------------------
 SELECT
     employee_id,
     first_name,
@@ -168,7 +265,7 @@ WHERE
             department_id
     )
 ORDER BY
-    4 DESC;
+    3 DESC;
 
 
 --문제6.
@@ -185,14 +282,15 @@ FROM
 GROUP BY
     job_id,
     job_title;
-SELECT
-    job_id,
-    SUM(salary)
-FROM
-    employees
-GROUP BY
-    job_id;
 
+--SELECT
+--    job_id,
+--    SUM(salary)
+--FROM
+--    employees
+--GROUP BY
+--    job_id;
+-----------------------------------------------------------------
 SELECT
     (
         SELECT
@@ -207,7 +305,7 @@ FROM
     employees e
 GROUP BY
     job_id;
-
+-------------------------------------------------------------
 SELECT
     job_title,
     (
@@ -221,16 +319,11 @@ SELECT
 FROM
     jobs j;
 
-SELECT
-    SUM(salary)
-FROM
-    employees
-GROUP BY
-    job_id;
-
+----------------------------------------------------------------
 SELECT
     job_title,
-    a.sum_sal
+    a.sum_sal,
+    job_id
 FROM
     jobs
     JOIN (
@@ -241,13 +334,34 @@ FROM
             employees
         GROUP BY
             job_id
-    ) a USING ( job_id );
+    ) a USING ( job_id )
+ORDER BY
+    2 DESC;
 
 --문제7.
 --자신의 부서 평균 급여보다 연봉(salary)이 많은 직원의 직원번호(employee_id), 이름
 --(first_name)과 급여(salary)을 조회하세요
 --(38건)
+SELECT
+    employee_id,
+    first_name,
+    salary
+FROM
+    employees
+    JOIN (
+        SELECT
+            department_id,
+            AVG(salary) avg
+        FROM
+            employees
+        GROUP BY
+            department_id
+    ) t USING ( department_id )
+WHERE
+    salary > t.avg;
 
+
+----------------------------------------------
 SELECT
     employee_id,
     first_name,
@@ -291,21 +405,9 @@ WHERE
     rn > 10
     AND rn < 16;
 --------------------------
-SELECT *
-FROM (SELECT
-    employee_id,
-    hire_date,
-    ROW_NUMBER()
-    OVER(
-        ORDER BY
-            hire_date ASC
-    ) AS rn
-FROM
-    employees)
-WHERE
-    rn < 6;
 
-SELECT *
+SELECT
+    *
 FROM
     (
         SELECT
@@ -325,6 +427,38 @@ WHERE
     rn < 16
     AND rn > 10;
     
-
-
-    
+-------------------------------------------------
+--SELECT
+--    ROWNUM rn,
+--    employee_id,
+--    first_name,
+--    salary,
+--    hire_date
+--FROM
+--    employees
+--ORDER BY
+--    hire_date;
+-------------------------------------
+SELECT
+    *
+FROM
+    (
+        SELECT
+            ROWNUM rn,
+            a.*
+        FROM
+            (
+                SELECT
+                    employee_id,
+                    first_name,
+                    salary,
+                    hire_date
+                FROM
+                    employees
+                ORDER BY
+                    hire_date
+            ) a
+    )
+WHERE
+    rn >= 11
+    AND rn <= 15;
