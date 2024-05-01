@@ -462,3 +462,5 @@ FROM
 WHERE
     rn >= 11
     AND rn <= 15;
+-- 흐름이 FROM -> WHERE -> SELECT -> ORDER BY 순으로 흘러가서
+-- 이미 ROWNUM이 hire_date로 정렬되기 전에 번호가 매겨져 위 코드로 짜야함
