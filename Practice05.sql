@@ -58,6 +58,8 @@ WHERE
 ---출력내용은 매니저 아이디, 매니저이름(first_name), 매니저별 평균급여, 매니저별 최소급여,
 --매니저별 최대급여 입니다.
 --(9건)
+
+
 SELECT DISTINCT
     e1.manager_id,
     m.first_name,
@@ -76,10 +78,9 @@ WHERE
     e1.hire_date >= '20160101';
 -----------------------------------------------------------------
 SELECT DISTINCT
-    a.*
+    *
 FROM
-    employees e
-    JOIN (
+    (
         SELECT DISTINCT
             e1.manager_id,
             m.first_name                     이름,
@@ -96,7 +97,7 @@ FROM
             JOIN employees m ON e1.manager_id = m.employee_id
         WHERE
             e1.hire_date >= '20160101'
-    ) a ON e.manager_id = a.manager_id
+    )
 WHERE
     평균 >= 5000;
 ----------------------------------------------------------------------
@@ -204,15 +205,12 @@ WHERE
             ) a ON e.department_id = a.department_id
     );
 
-
-
---문제8.
---평균 급여(salary)가 가장 높은 부서는?
-SELECT DISTINCT
-    e.department_id
+SELECT
+    avg,
+    department_id,
+    department_name
 FROM
-    employees e
-    JOIN (
+    (
         SELECT
             AVG(salary) avg,
             department_id
@@ -220,6 +218,30 @@ FROM
             employees
         GROUP BY
             department_id
+    )
+    JOIN departments USING ( department_id );
+--문제8.
+--평균 급여(salary)가 가장 높은 부서는?
+SELECT DISTINCT
+    a.department_name
+FROM
+    employees e
+    JOIN (
+        SELECT
+            avg,
+            department_id,
+            department_name
+        FROM
+            (
+                SELECT
+                    AVG(salary) avg,
+                    department_id
+                FROM
+                    employees
+                GROUP BY
+                    department_id
+            )
+            JOIN departments USING ( department_id )
     ) a ON e.department_id = a.department_id
 WHERE
     avg = (
@@ -240,53 +262,73 @@ WHERE
 
 --문제9.
 --평균 급여(salary)가 가장 높은 지역은?
+--SELECT
+--    MAX(avg)
+--FROM
+--    (
+--        SELECT
+--            AVG(salary) avg,
+--            location_id
+--        FROM
+--            employees
+--            JOIN departments USING ( department_id )
+--            JOIN locations USING ( location_id )
+--        GROUP BY
+--            location_id
+--    );
+------------------------------------------------------------------
 SELECT DISTINCT
-    l.city
+    r.region_name
 FROM
     employees e
+    JOIN departments d ON e.department_id = d.department_id
     JOIN (
         SELECT
             AVG(salary) avg,
-            department_id
+            location_id
         FROM
             employees
+            JOIN departments USING ( department_id )
+            JOIN locations USING ( location_id )
         GROUP BY
-            department_id
-    )           a ON e.department_id = a.department_id
-    JOIN departments d ON e.department_id = d.department_id
-    JOIN locations   l ON d.location_id = l.location_id
+            location_id
+    )           a ON d.location_id = a.location_id
+    JOIN locations   l ON a.location_id = l.location_id
+    JOIN countries   c ON l.country_id = c.country_id
+    JOIN regions     r ON c.region_id = r.region_id
 WHERE
     avg = (
         SELECT
             MAX(avg)
         FROM
-            employees e
-            JOIN (
+            (
                 SELECT
                     AVG(salary) avg,
-                    department_id
+                    location_id
                 FROM
                     employees
+                    JOIN departments USING ( department_id )
+                    JOIN locations USING ( location_id )
                 GROUP BY
-                    department_id
-            ) a ON e.department_id = a.department_id
+                    location_id
+            )
     );
 
 --문제10.
 --평균 급여(salary)가 가장 높은 업무는?
-SELECT DISTINCT
+SELECT
     j.job_title
 FROM
     employees e
     JOIN (
         SELECT
             AVG(salary) avg,
-            department_id
+            job_id
         FROM
             employees
         GROUP BY
-            department_id
-    )    a ON e.department_id = a.department_id
+            job_id
+    )    a ON e.job_id = a.job_id
     JOIN jobs j ON e.job_id = j.job_id
 WHERE
     avg = (
@@ -297,10 +339,43 @@ WHERE
             JOIN (
                 SELECT
                     AVG(salary) avg,
-                    department_id
+                    job_id
                 FROM
                     employees
                 GROUP BY
-                    department_id
-            ) a ON e.department_id = a.department_id
+                    job_id
+            ) a ON e.job_id = a.job_id
     );
+
+------------------------------------------------------------------
+
+--SELECT DISTINCT
+--    j.job_title
+--FROM
+--    employees e
+--    JOIN (
+--        SELECT
+--            AVG(salary) avg,
+--            job_id
+--        FROM
+--            employees
+--        GROUP BY
+--            job_id
+--    )    a ON e.job_id = a.job_id
+--    JOIN jobs j ON e.job_id = j.job_id
+--WHERE
+--    avg = (
+--        SELECT
+--            MAX(avg)
+--        FROM
+--            employees e
+--            JOIN (
+--                SELECT
+--                    AVG(salary) avg,
+--                    department_id
+--                FROM
+--                    employees
+--                GROUP BY
+--                    department_id
+--            ) a ON e.department_id = a.department_id
+--    );
