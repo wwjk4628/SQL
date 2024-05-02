@@ -58,8 +58,58 @@ WHERE
 ---출력내용은 매니저 아이디, 매니저이름(first_name), 매니저별 평균급여, 매니저별 최소급여,
 --매니저별 최대급여 입니다.
 --(9건)
-
-
+SELECT
+    manager_id  abc,
+    round(
+        AVG(salary), 0
+    )           avg_sal,
+    MAX(salary) max_sal,
+    MIN(salary) min_sal
+FROM
+    (
+        SELECT
+            *
+        FROM
+            employees
+        WHERE
+            hire_date >= '20160101'
+    )
+WHERE
+    manager_id IS NOT NULL
+GROUP BY
+    manager_id;
+----------------------------------------------
+SELECT
+    r.first_name,
+    t.*
+FROM
+    employees r
+    JOIN (
+        SELECT
+            manager_id  abc,
+            round(
+                AVG(salary), 0
+            )           avg_sal,
+            MAX(salary) max_sal,
+            MIN(salary) min_sal
+        FROM
+            (
+                SELECT
+                    *
+                FROM
+                    employees
+                WHERE
+                    hire_date >= '20160101'
+            )
+        WHERE
+            manager_id IS NOT NULL
+        GROUP BY
+            manager_id
+    ) t ON r.employee_id = t.abc
+WHERE
+    avg_sal >= 5000
+    ORDER BY avg_sal DESC;
+----------------------------------------------------------------
 SELECT DISTINCT
     e1.manager_id,
     m.first_name,
@@ -77,6 +127,21 @@ FROM
 WHERE
     e1.hire_date >= '20160101';
 -----------------------------------------------------------------
+SELECT DISTINCT
+    e1.manager_id,
+    m.first_name                     이름,
+    AVG(e1.salary)
+    OVER(PARTITION BY e1.manager_id) 평균,
+    MAX(e1.salary)
+    OVER(PARTITION BY e1.manager_id) 최대,
+    MIN(e1.salary)
+    OVER(PARTITION BY e1.manager_id) 최소
+FROM
+    employees e1
+    JOIN employees m ON e1.manager_id = m.employee_id
+WHERE
+    e1.hire_date >= '20160101';
+
 SELECT DISTINCT
     *
 FROM
@@ -99,7 +164,8 @@ FROM
             e1.hire_date >= '20160101'
     )
 WHERE
-    평균 >= 5000;
+    평균 >= 5000
+    ORDER BY 평균 DESC;
 ----------------------------------------------------------------------
 --문제4.
 --각 사원(employee)에 대해서 사번(employee_id), 이름(first_name), 부서명
